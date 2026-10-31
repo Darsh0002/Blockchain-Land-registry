@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeLand | Decentralized Land Registry</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Ethers.js library for Web3 provider and smart contract interactions -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <div class="container nav-inner">
+      <div class="brand-wrapper">
+        <div class="brand-logo">🏡</div>
+        <div>
+          <div class="brand-title">
+            SafeLand
+            <span class="badge-mini">Blockchain Verified</span>
+          </div>
+          <div class="brand-desc">Decentralized Land Deed Registry & Direct Marketplace</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="btnConnectWallet" class="btn btn-primary">
+          <span id="walletBtnIcon">🦊</span>
+          <span id="walletBtnText">Connect MetaMask Wallet</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Simple "How It Works" 3-Step Guide for Anyone -->
+    <section class="explainer-banner">
+      <div class="banner-header">
+        <h2 class="banner-title">✨ How Blockchain Land Registry Works in 3 Simple Steps</h2>
+        <p class="banner-subtitle">Say goodbye to forged paperwork, corrupt middlemen, and double-selling scams.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-number">STEP 1</span>
+          <h3 class="step-heading">📝 Register Property</h3>
+          <p class="step-text">Property owners mint a digital deed with government survey numbers stored permanently on the blockchain.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-number">STEP 2</span>
+          <h3 class="step-heading">🔍 Verify Deed History</h3>
+          <p class="step-text">Anyone can inspect the complete, tamper-proof audit trail of previous owners and past sales before buying.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-number">STEP 3</span>
+          <h3 class="step-heading">🤝 Buy Directly with ETH</h3>
+          <p class="step-text">Payment transfers directly from buyer to seller with zero middlemen. The deed ownership updates instantly!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Top Dashboard: Wallet Status & Live Counters -->
+    <div class="dashboard-grid">
+      <!-- Wallet Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">🦊 Your Wallet & Network</h2>
+            <p class="card-desc">Status of your connected MetaMask account</p>
+          </div>
+          <span id="connectionBadge" class="status-pill status-registered">⚪ Not Connected</span>
+        </div>
+
+        <div class="wallet-stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Connected Wallet Address</span>
+            <span id="displayAccount" class="stat-value mono">Not Connected</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Your Wallet Balance</span>
+            <span id="displayBalance" class="stat-value">0.0000 ETH</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Active Blockchain Network</span>
+            <span id="displayNetwork" class="stat-value">-</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Registry Smart Contract</span>
+            <span id="displayContractAddr" class="stat-value mono" style="font-size: 0.8rem;">Loading...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Numbers -->
+      <div class="counters-vertical">
+        <div class="counter-card">
+          <div class="counter-icon blue">📜</div>
+          <div>
+            <div class="counter-data-title">Total Registered Lands</div>
+            <div id="statTotalLands" class="counter-number">0</div>
+            <div class="counter-help">Official deeds recorded on the ledger</div>
+          </div>
+        </div>
+        <div class="counter-card">
+          <div class="counter-icon green">🏷️</div>
+          <div>
+            <div class="counter-data-title">Available for Sale</div>
+            <div id="statForSaleLands" class="counter-number">0</div>
+            <div class="counter-help">Properties ready for instant purchase</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Section: Land Parcels Table (Requirement 5) -->
+    <section class="main-section">
+      <div class="section-toolbar">
+        <div>
+          <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">
+            📋 Verified Land Directory & Marketplace
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            All land titles verified by cryptographic smart contracts on Ethereum
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <div class="filter-chips">
+            <button class="filter-chip active" data-filter="all">All Properties</button>
+            <button class="filter-chip" data-filter="for-sale">🏷️ For Sale</button>
+            <button class="filter-chip" data-filter="my-lands">👤 Properties I Own</button>
+          </div>
+          <button id="btnRefreshTable" class="btn btn-secondary btn-sm" title="Reload from blockchain">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="modern-table" id="landsTable">
+          <thead>
+            <tr>
+              <th style="width: 50px;">ID</th>
+              <th>Property Location</th>
+              <th>Survey #</th>
+              <th>Total Area</th>
+              <th>Current Owner</th>
+              <th>Selling Price</th>
+              <th>Market Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="landsTableBody">
+            <tr>
+              <td colspan="8" class="empty-state-box">
+                <div class="empty-icon">⏳</div>
+                <div>Loading land records directly from the smart contract...</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Main Section: Register New Land Parcel (Requirement 3, 7, 8) -->
+    <section class="card form-card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">➕ Register a New Property Deed</h2>
+          <p class="card-desc">Add your official land parcel into the decentralized registry</p>
+        </div>
+      </div>
+
+      <form id="registerLandForm">
+        <div class="form-grid">
+          <div class="form-field" style="grid-column: span 2;">
+            <label for="landLocation">
+              <span>Property Address / Location *</span>
+              <span class="field-hint">e.g. Plot 404, Green Hills Colony, Sector 12</span>
+            </label>
+            <input type="text" id="landLocation" class="input-styled" placeholder="Enter complete property address or landmark" required />
+          </div>
+
+          <div class="form-field">
+            <label for="landNumber">
+              <span>Official Survey Number *</span>
+              <span class="field-hint">Government revenue parcel number</span>
+            </label>
+            <input type="number" id="landNumber" class="input-styled" placeholder="e.g. 108" min="1" required />
+          </div>
+
+          <div class="form-field">
+            <label for="landArea">
+              <span>Total Area (in Square Feet) *</span>
+              <span class="field-hint">e.g. 2400 sq ft</span>
+            </label>
+            <input type="number" id="landArea" class="input-styled" placeholder="e.g. 2400" min="1" required />
+          </div>
+
+          <div class="form-field">
+            <label for="landPrice">
+              <span>Property Price (in ETH) *</span>
+              <span class="field-hint">Fair valuation or selling price</span>
+            </label>
+            <input type="number" step="0.001" id="landPrice" class="input-styled" placeholder="e.g. 1.5" min="0.001" required />
+          </div>
+
+          <div class="form-field" style="justify-content: center;">
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 10px; margin-top: 18px; user-select: none;">
+              <input type="checkbox" id="landListForSale" style="width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer;" checked />
+              <div>
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">Make available for sale immediately</strong>
+                <div class="field-hint">Other buyers can purchase this property right away</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Live Smart Calculator (Requirement 8 Pure Function) -->
+        <div class="calculator-box">
+          <div class="calc-item">
+            <span class="calc-title">📐 Instant Acreage Calculation</span>
+            <span id="calcAcreage" class="calc-val">0.000 Acres</span>
+            <span class="calc-note">Calculated free-of-cost via Solidity pure function (1 acre = 43,560 sq ft)</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-title">🏛️ Estimated 5% Stamp Duty / Tax</span>
+            <span id="calcStampDuty" class="calc-val">0.0000 ETH</span>
+            <span class="calc-note">Calculated instantly via Solidity pure function at 500 basis points</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+          <button type="submit" id="btnSubmitRegister" class="btn btn-primary" style="padding: 12px 28px;">
+            <span>📝 Register This Property on Blockchain</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- Modal: Ownership Deed Audit Trail (Requirement 6 Contract-to-Contract) -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal-window">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">📜 Immutable Deed Transfer History</h3>
+          <p id="historyModalSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;"></p>
+        </div>
+        <button class="btn-modal-close" id="btnCloseHistoryModal">&times;</button>
+      </div>
+
+      <div class="modal-desc-box">
+        💡 <strong>Proof of Authenticity:</strong> Every time this land is created, bought, or transferred, a record is permanently written to the <code>OwnershipHistory</code> smart contract. This record is immutable and cannot be deleted or manipulated.
+      </div>
+
+      <div class="table-wrapper">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Previous Owner</th>
+              <th>New Owner</th>
+              <th>Price Paid</th>
+              <th>Date & Time</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr>
+              <td colspan="5" class="empty-state-box">Loading deed records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btnCloseHistoryBtn">Close History</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Set Asking Price / List for Sale -->
+  <div class="modal-overlay" id="updatePriceModal">
+    <div class="modal-window" style="max-width: 460px;">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title" id="priceModalTitle">🏷️ Manage Selling Price</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Set your desired asking price in ETH</p>
+        </div>
+        <button class="btn-modal-close" id="btnClosePriceModal">&times;</button>
+      </div>
+
+      <form id="updatePriceForm">
+        <input type="hidden" id="modalLandId" />
+        <input type="hidden" id="modalActionType" value="update" />
+
+        <div class="form-field" style="margin-bottom: 16px;">
+          <label for="modalPriceInput">
+            <span>Asking Price (in Ether ETH) *</span>
+          </label>
+          <input type="number" step="0.001" id="modalPriceInput" class="input-styled" placeholder="e.g. 2.5" min="0.001" required />
+          <span class="field-hint" id="modalPriceHint">Buyers will be able to purchase your property for this amount</span>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btnCancelPriceModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitPriceModal">Confirm Price</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Real-time Toast Notifications -->
+  <div id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      SafeLand Decentralized Registry &bull; Powered by Ethereum Smart Contracts &bull; 100% Transparent
+    </div>
+  </footer>
+
+  <!-- Frontend Logic Modules -->
+  <script src="js/wallet.js"></script>
+  <script src="js/contract.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

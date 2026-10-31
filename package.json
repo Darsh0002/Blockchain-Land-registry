@@ -1,0 +1,28 @@
+{
+  "name": "blockchain-land-registry",
+  "version": "1.0.0",
+  "description": "Blockchain-based Land Registry DApp with Truffle, Solidity, and MetaMask",
+  "main": "truffle-config.js",
+  "scripts": {
+    "ganache": "node scripts/start-ganache.js",
+    "compile": "truffle compile",
+    "migrate": "truffle migrate --reset",
+    "test": "truffle test",
+    "test:auto": "node scripts/test-runner.js",
+    "start": "lite-server --baseDir=frontend"
+  },
+  "keywords": [
+    "blockchain",
+    "solidity",
+    "truffle",
+    "ethereum",
+    "land-registry",
+    "smart-contracts",
+    "dapp"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
