@@ -5,6 +5,7 @@
 const App = {
   activeFilter: "all",
   cachedLands: [],
+  govtAuthority: null,  // Government Land Authority address (contractOwner)
 
   async init() {
     console.log("Initializing SafeLand Registry Application...");
@@ -28,22 +29,42 @@ const App = {
 
     this.bindEvents();
     await this.loadAndRenderLands();
+    await this.updateRoleUI();
   },
 
   bindEvents() {
-    // Wallet connect button
+    // Wallet connect button — connects fresh or re-opens account chooser if already connected
     document.getElementById("btnConnectWallet").addEventListener("click", async () => {
       try {
         const connected = await Wallet.connect();
         if (connected) {
           ContractService.updateSigner(Wallet.signer);
-          this.showToast("MetaMask wallet connected successfully! You are ready to buy and sell.", "success");
+          this.showToast("MetaMask wallet connected successfully!", "success");
           await this.loadAndRenderLands();
+          await this.updateRoleUI();
         }
       } catch (err) {
         this.showToast(err.message || "Failed to connect wallet", "error");
       }
     });
+
+    // Switch Account button — always opens MetaMask's account chooser popup
+    const btnSwitch = document.getElementById("btnSwitchAccount");
+    if (btnSwitch) {
+      btnSwitch.addEventListener("click", async () => {
+        try {
+          const switched = await Wallet.switchAccount();
+          if (switched) {
+            ContractService.updateSigner(Wallet.signer);
+            this.showToast(`Switched to ${Wallet.formatAddress(Wallet.account)}`, "info");
+            await this.loadAndRenderLands();
+            await this.updateRoleUI();
+          }
+        } catch (err) {
+          this.showToast(err.message || "Could not switch account", "error");
+        }
+      });
+    }
 
     // Refresh button
     document.getElementById("btnRefreshTable").addEventListener("click", () => {
@@ -111,11 +132,67 @@ const App = {
     ContractService.updateSigner(Wallet.signer);
     this.showToast(`Active account switched to ${Wallet.formatAddress(newAccount)}`, "info");
     await this.loadAndRenderLands();
+    await this.updateRoleUI();
   },
 
   onDisconnected() {
     this.showToast("Wallet disconnected", "info");
     this.renderTable();
+    this.updateRoleUI();
+  },
+
+  /**
+   * Returns true if the connected wallet is the Government Land Authority
+   */
+  isGovtAdmin() {
+    if (!Wallet.account || !this.govtAuthority) return false;
+    return Wallet.account.toLowerCase() === this.govtAuthority.toLowerCase();
+  },
+
+  /**
+   * Update role-based UI:
+   *  - Show "Government Authority" badge or "Citizen" badge
+   *  - Show/hide the register form section
+   *  - Update toast message based on role
+   */
+  async updateRoleUI() {
+    try {
+      // Fetch the govt authority address from the contract (once)
+      if (ContractService.registryContract) {
+        this.govtAuthority = await ContractService.getContractOwner();
+      }
+    } catch (e) {
+      console.warn("Could not fetch contractOwner:", e);
+    }
+
+    const isAdmin = this.isGovtAdmin();
+    const isConnected = !!Wallet.account;
+
+    // Role badge in the wallet card
+    const roleBadgeEl = document.getElementById("roleBadge");
+    if (roleBadgeEl) {
+      if (!isConnected) {
+        roleBadgeEl.textContent = "";
+        roleBadgeEl.className = "";
+      } else if (isAdmin) {
+        roleBadgeEl.textContent = "🏛️ Government Authority";
+        roleBadgeEl.className = "badge badge-govt";
+      } else {
+        roleBadgeEl.textContent = "👤 Citizen";
+        roleBadgeEl.className = "badge badge-citizen";
+      }
+    }
+
+    // Show register form only to Government Authority
+    const registerSection = document.getElementById("registerSection");
+    const citizenNotice = document.getElementById("citizenNotice");
+
+    if (registerSection) {
+      registerSection.style.display = isAdmin ? "block" : "none";
+    }
+    if (citizenNotice) {
+      citizenNotice.style.display = (!isAdmin && isConnected) ? "block" : "none";
+    }
   },
 
   /**
@@ -127,6 +204,10 @@ const App = {
       if (!ContractService.registryContract) {
         tbody.innerHTML = `<tr><td colspan="8" class="empty-state-box"><div>Smart contracts not detected on this network. Please ensure Ganache is running.</div></td></tr>`;
         return;
+      }
+
+      if (!this.govtAuthority) {
+        this.govtAuthority = await ContractService.getContractOwner();
       }
 
       // Fetch all lands from smart contract
@@ -174,9 +255,9 @@ const App = {
       tbody.innerHTML = `
         <tr>
           <td colspan="8" class="empty-state-box">
-            <div class="empty-icon">📂</div>
-            <div style="font-weight: 700;">No properties found in this category</div>
-            <div style="font-size: 0.8rem; margin-top: 4px;">Try selecting "All Properties" or register a new one below!</div>
+            <div class="empty-icon text-3xl mb-1.5">📂</div>
+            <div class="font-bold text-slate-700 text-sm">No properties found in this category</div>
+            <div class="text-xs text-slate-400 mt-1">Try selecting "All Properties" or register a new one below!</div>
           </td>
         </tr>`;
       return;
@@ -184,6 +265,8 @@ const App = {
 
     filtered.forEach((land) => {
       const isOwner = Wallet.isCurrentUser(land.currentOwner);
+      const isGovtOwner = (this.govtAuthority && land.currentOwner.toLowerCase() === this.govtAuthority.toLowerCase()) ||
+                          land.currentOwner.toLowerCase() === "0xfc8d23d9d365f6879bef73a89d2c243c8d707569".toLowerCase();
       const acres = ((land.areaSqFt * 1000) / 43560 / 1000).toFixed(3);
 
       // Plain English status badges
@@ -230,25 +313,26 @@ const App = {
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td><strong>#${land.id}</strong></td>
+        <td><span class="font-mono text-xs font-bold px-2 py-1 rounded bg-slate-100 text-slate-700">#${land.id}</span></td>
         <td>
-          <div style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">${land.location}</div>
+          <div class="font-semibold text-slate-900 text-sm">${land.location}</div>
         </td>
         <td>
-          <span style="font-family: var(--font-mono); font-weight: 600; color: #475569;">#${land.landNumber}</span>
+          <span class="font-mono text-xs font-medium px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200/80">#${land.landNumber}</span>
         </td>
         <td>
-          <div style="font-weight: 700;">${land.areaSqFt.toLocaleString()} sq ft</div>
-          <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">~${acres} acres</div>
+          <div class="font-semibold text-slate-800 text-sm">${land.areaSqFt.toLocaleString()} sq ft</div>
+          <div class="text-[11px] text-slate-400 font-medium">~${acres} acres</div>
         </td>
         <td>
           <div class="owner-badge">
             <span>${Wallet.formatAddress(land.currentOwner)}</span>
+            ${isGovtOwner ? '<span class="govt-tag">🏛️ Govt Property</span>' : ''}
             ${isOwner ? '<span class="you-tag">YOU OWN THIS</span>' : ''}
           </div>
         </td>
         <td>
-          <div style="font-weight: 800; color: #0f172a; font-size: 1rem;">${land.priceEth} ETH</div>
+          <div class="font-bold text-slate-900 text-sm font-mono">${land.priceEth} <span class="text-xs font-semibold text-slate-500 font-sans">ETH</span></div>
         </td>
         <td>${statusBadge}</td>
         <td style="text-align: right; white-space: nowrap;">
@@ -268,6 +352,11 @@ const App = {
     if (!Wallet.account) {
       this.showToast("Please connect your MetaMask wallet first!", "error");
       await Wallet.connect();
+      return;
+    }
+
+    if (!this.isGovtAdmin()) {
+      this.showToast("❌ Access Denied: Only the Government Land Authority can register land parcels.", "error");
       return;
     }
 
@@ -430,20 +519,22 @@ const App = {
       tbody.innerHTML = "";
       records.forEach((rec, index) => {
         const fromAddr = rec.from === "0x0000000000000000000000000000000000000000"
-          ? `<span style="color: #2563eb; font-weight: 700;">🏛️ Initial Government Deed Mint</span>`
+          ? `<span class="text-blue-600 font-semibold text-xs flex items-center gap-1">🏛️ Initial Government Deed Mint</span>`
           : `<span class="owner-badge">${Wallet.formatAddress(rec.from)}</span>`;
 
-        const toAddr = `<span class="owner-badge">${Wallet.formatAddress(rec.to)}</span>`;
+        const isGovtTo = (this.govtAuthority && rec.to.toLowerCase() === this.govtAuthority.toLowerCase()) ||
+                         rec.to.toLowerCase() === "0xfc8d23d9d365f6879bef73a89d2c243c8d707569".toLowerCase();
+        const toAddr = `<span class="owner-badge">${Wallet.formatAddress(rec.to)}${isGovtTo ? ' <span class="govt-tag">🏛️ Govt Property</span>' : ''}</span>`;
         const price = ethers.utils.formatEther(rec.price);
         const date = new Date(rec.timestamp.toNumber ? rec.timestamp.toNumber() * 1000 : parseInt(rec.timestamp.toString()) * 1000).toLocaleString();
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td><strong>#${index + 1}</strong></td>
+          <td><span class="font-mono text-xs font-bold text-slate-500">#${index + 1}</span></td>
           <td>${fromAddr}</td>
           <td>${toAddr}</td>
-          <td><strong>${price} ETH</strong></td>
-          <td><span style="font-size: 0.82rem; color: var(--text-muted);">${date}</span></td>
+          <td><span class="font-mono font-bold text-slate-900">${price} ETH</span></td>
+          <td><span class="text-xs text-slate-500">${date}</span></td>
         `;
         tbody.appendChild(tr);
       });

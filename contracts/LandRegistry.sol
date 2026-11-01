@@ -115,7 +115,7 @@ contract LandRegistry {
 
     /**
      * @dev Requirement 3: Function to perform operation (register new land).
-     * Accessible to users registering their land parcels.
+     * Only the Government Land Authority (contractOwner) can register official survey parcels.
      * Demonstrates Contract-to-Contract call upon registration.
      */
     function registerLand(
@@ -124,7 +124,7 @@ contract LandRegistry {
         uint256 _landNumber,
         uint256 _priceInWei,
         bool _listForSale
-    ) external returns (uint256) {
+    ) external onlyContractOwner returns (uint256) {
         // Requirement 7: require validations
         require(bytes(_location).length > 0, "Location cannot be empty");
         require(_areaSqFt > 0, "Area must be greater than zero");

@@ -24,6 +24,7 @@ module.exports = {
           enabled: true,
           runs: 200,
         },
+        evmVersion: "paris",  // Required: Ganache doesn't support PUSH0 (shanghai/cancun default)
       },
     },
   },

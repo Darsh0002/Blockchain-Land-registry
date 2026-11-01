@@ -126,6 +126,37 @@ const Wallet = {
     }
   },
 
+  /**
+   * Open MetaMask account picker so the user can choose a different account.
+   * Uses wallet_requestPermissions which always shows the account selection UI.
+   */
+  async switchAccount() {
+    if (!this.isInstalled()) return;
+    try {
+      // wallet_requestPermissions always opens MetaMask's account chooser
+      await window.ethereum.request({
+        method: "wallet_requestPermissions",
+        params: [{ eth_accounts: {} }],
+      });
+      // After user picks an account, eth_accounts returns the selected one
+      this.provider = new ethers.providers.Web3Provider(window.ethereum);
+      const accounts = await this.provider.send("eth_accounts", []);
+      if (accounts && accounts.length > 0) {
+        this.account = accounts[0];
+        this.signer = this.provider.getSigner();
+        await this.updateState();
+        return true;
+      }
+    } catch (err) {
+      if (err.code === 4001) {
+        console.log("User cancelled account switch.");
+      } else {
+        console.error("Account switch error:", err);
+      }
+    }
+    return false;
+  },
+
   // Refresh balance & network
   async updateState() {
     if (!this.account || !this.provider) return;
@@ -153,6 +184,7 @@ const Wallet = {
   // Render wallet status to DOM
   renderWalletUI() {
     const btnConnect = document.getElementById("btnConnectWallet");
+    const btnSwitch = document.getElementById("btnSwitchAccount");
     const btnText = document.getElementById("walletBtnText");
     const badge = document.getElementById("connectionBadge");
     const displayAccount = document.getElementById("displayAccount");
@@ -164,6 +196,9 @@ const Wallet = {
       btnText.textContent = shortAddr;
       btnConnect.classList.remove("btn-primary");
       btnConnect.classList.add("btn-outline");
+
+      // Show Switch Account button once connected
+      if (btnSwitch) btnSwitch.style.display = "inline-flex";
 
       badge.textContent = "🟢 Connected";
       badge.className = "badge badge-success";
@@ -184,6 +219,9 @@ const Wallet = {
       btnText.textContent = "Connect MetaMask";
       btnConnect.classList.add("btn-primary");
       btnConnect.classList.remove("btn-outline");
+
+      // Hide Switch Account button when disconnected
+      if (btnSwitch) btnSwitch.style.display = "none";
 
       badge.textContent = "⚪ Disconnected";
       badge.className = "badge badge-neutral";

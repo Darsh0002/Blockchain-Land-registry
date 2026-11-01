@@ -80,6 +80,14 @@ const ContractService = {
   },
 
   /**
+   * Fetch the Government Authority address (contractOwner) from the blockchain
+   */
+  async getContractOwner() {
+    if (!this.registryContract) return null;
+    return await this.registryContract.contractOwner();
+  },
+
+  /**
    * Requirement 5: Table Function - Fetch all registered land structs
    */
   async getAllLands() {

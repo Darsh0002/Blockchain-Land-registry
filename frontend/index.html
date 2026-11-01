@@ -4,149 +4,235 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SafeLand | Decentralized Land Registry</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Component Styles -->
   <link rel="stylesheet" href="css/style.css">
-  <!-- Ethers.js library for Web3 provider and smart contract interactions -->
+  
+  <!-- Ethers.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
 
   <!-- Top Navigation Bar -->
-  <header>
-    <div class="container nav-inner">
-      <div class="brand-wrapper">
-        <div class="brand-logo">🏡</div>
+  <header class="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-sm shadow-blue-500/20">
+          🏡
+        </div>
         <div>
-          <div class="brand-title">
-            SafeLand
-            <span class="badge-mini">Blockchain Verified</span>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-lg tracking-tight text-slate-900">SafeLand</span>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/70">
+              Ethereum Verified
+            </span>
           </div>
-          <div class="brand-desc">Decentralized Land Deed Registry & Direct Marketplace</div>
+          <p class="text-xs text-slate-500 font-medium hidden sm:block">Decentralized Land Deed Registry & Direct Marketplace</p>
         </div>
       </div>
-      <div class="nav-actions">
-        <button id="btnConnectWallet" class="btn btn-primary">
+
+      <!-- Wallet & Account Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <span id="roleBadge"></span>
+        
+        <button id="btnSwitchAccount" class="btn btn-secondary text-xs font-semibold rounded-xl transition flex items-center gap-1.5" style="display:none;" title="Switch MetaMask account">
+          <span>🔄</span>
+          <span class="hidden sm:inline">Switch Account</span>
+        </button>
+
+        <button id="btnConnectWallet" class="btn btn-primary text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition flex items-center gap-2">
           <span id="walletBtnIcon">🦊</span>
           <span id="walletBtnText">Connect MetaMask Wallet</span>
         </button>
       </div>
+
     </div>
   </header>
 
-  <main class="container">
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
 
-    <!-- Simple "How It Works" 3-Step Guide for Anyone -->
-    <section class="explainer-banner">
-      <div class="banner-header">
-        <h2 class="banner-title">✨ How Blockchain Land Registry Works in 3 Simple Steps</h2>
-        <p class="banner-subtitle">Say goodbye to forged paperwork, corrupt middlemen, and double-selling scams.</p>
+    <!-- Stepper / How It Works Banner (Minimalist Light Design) -->
+    <section class="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7 shadow-sm">
+      <div class="mb-5">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span>✨</span>
+          <span>How Blockchain Land Registry Works in 3 Simple Steps</span>
+        </h2>
+        <p class="text-xs text-slate-500 mt-0.5">Tamper-proof title records, zero forged paperwork, and direct peer-to-peer property settlement.</p>
       </div>
-      <div class="steps-grid">
-        <div class="step-card">
-          <span class="step-number">STEP 1</span>
-          <h3 class="step-heading">📝 Register Property</h3>
-          <p class="step-text">Property owners mint a digital deed with government survey numbers stored permanently on the blockchain.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Step 1 -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">STEP 1</span>
+            <h3 class="font-semibold text-sm text-slate-900">🏛️ Government Minting</h3>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Only the Government Authority registers official survey parcels directly onto the smart contract ledger.
+          </p>
         </div>
-        <div class="step-card">
-          <span class="step-number">STEP 2</span>
-          <h3 class="step-heading">🔍 Verify Deed History</h3>
-          <p class="step-text">Anyone can inspect the complete, tamper-proof audit trail of previous owners and past sales before buying.</p>
+
+        <!-- Step 2 -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">STEP 2</span>
+            <h3 class="font-semibold text-sm text-slate-900">📜 Audit Deed Trail</h3>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Citizens can inspect the immutable historical chain of ownership transfers recorded in the smart contract.
+          </p>
         </div>
-        <div class="step-card">
-          <span class="step-number">STEP 3</span>
-          <h3 class="step-heading">🤝 Buy Directly with ETH</h3>
-          <p class="step-text">Payment transfers directly from buyer to seller with zero middlemen. The deed ownership updates instantly!</p>
+
+        <!-- Step 3 -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">STEP 3</span>
+            <h3 class="font-semibold text-sm text-slate-900">🤝 Direct Purchase</h3>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Payment in ETH goes directly to the seller via contract-to-account logic; deed ownership updates instantly.
+          </p>
         </div>
       </div>
     </section>
 
     <!-- Top Dashboard: Wallet Status & Live Counters -->
-    <div class="dashboard-grid">
-      <!-- Wallet Card -->
-      <div class="card">
-        <div class="card-header">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Wallet Info Card (2 Columns Wide on Desktop) -->
+      <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
+        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <div>
-            <h2 class="card-title">🦊 Your Wallet & Network</h2>
-            <p class="card-desc">Status of your connected MetaMask account</p>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span>🦊</span>
+              <span>Your Wallet & Network</span>
+            </h2>
+            <p class="text-xs text-slate-500">Live Web3 provider connection status</p>
           </div>
-          <span id="connectionBadge" class="status-pill status-registered">⚪ Not Connected</span>
+          <span id="connectionBadge" class="badge badge-neutral">⚪ Not Connected</span>
         </div>
 
-        <div class="wallet-stats-grid">
-          <div class="stat-item">
-            <span class="stat-label">Connected Wallet Address</span>
-            <span id="displayAccount" class="stat-value mono">Not Connected</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="block text-[11px] font-medium text-slate-500 mb-1">Connected Wallet Address</span>
+            <span id="displayAccount" class="font-mono text-sm font-semibold text-slate-900 block truncate">Not Connected</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Your Wallet Balance</span>
-            <span id="displayBalance" class="stat-value">0.0000 ETH</span>
+
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="block text-[11px] font-medium text-slate-500 mb-1">Wallet Balance</span>
+            <span id="displayBalance" class="text-sm font-bold text-slate-900 block">0.0000 ETH</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Active Blockchain Network</span>
-            <span id="displayNetwork" class="stat-value">-</span>
+
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="block text-[11px] font-medium text-slate-500 mb-1">Active Network</span>
+            <span id="displayNetwork" class="text-sm font-semibold text-slate-900 block">-</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Registry Smart Contract</span>
-            <span id="displayContractAddr" class="stat-value mono" style="font-size: 0.8rem;">Loading...</span>
+
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="block text-[11px] font-medium text-slate-500 mb-1">Registry Smart Contract</span>
+            <span id="displayContractAddr" class="font-mono text-xs font-semibold text-slate-700 block truncate">Loading...</span>
           </div>
         </div>
       </div>
 
-      <!-- Quick Numbers -->
-      <div class="counters-vertical">
-        <div class="counter-card">
-          <div class="counter-icon blue">📜</div>
+      <!-- Quick Metrics Counters -->
+      <div class="space-y-4 flex flex-col justify-between">
+        <!-- Counter 1 -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex items-center gap-4 flex-1">
+          <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-xl text-blue-600 shrink-0">
+            📜
+          </div>
           <div>
-            <div class="counter-data-title">Total Registered Lands</div>
-            <div id="statTotalLands" class="counter-number">0</div>
-            <div class="counter-help">Official deeds recorded on the ledger</div>
+            <div class="text-xs font-medium text-slate-500">Total Registered Lands</div>
+            <div id="statTotalLands" class="text-2xl font-black text-slate-900 my-0.5">0</div>
+            <div class="text-[11px] text-slate-400">Official parcels on blockchain</div>
           </div>
         </div>
-        <div class="counter-card">
-          <div class="counter-icon green">🏷️</div>
+
+        <!-- Counter 2 -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex items-center gap-4 flex-1">
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-xl text-emerald-600 shrink-0">
+            🏷️
+          </div>
           <div>
-            <div class="counter-data-title">Available for Sale</div>
-            <div id="statForSaleLands" class="counter-number">0</div>
-            <div class="counter-help">Properties ready for instant purchase</div>
+            <div class="text-xs font-medium text-slate-500">Available For Sale</div>
+            <div id="statForSaleLands" class="text-2xl font-black text-slate-900 my-0.5">0</div>
+            <div class="text-[11px] text-slate-400">Ready for instant allotment</div>
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- Main Section: Land Parcels Table (Requirement 5) -->
-    <section class="main-section">
-      <div class="section-toolbar">
+    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      
+      <!-- Toolbar -->
+      <div class="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">
+          <h2 class="text-lg font-bold text-slate-900">
             📋 Verified Land Directory & Marketplace
           </h2>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">
-            All land titles verified by cryptographic smart contracts on Ethereum
+          <p class="text-xs text-slate-500 mt-0.5">
+            Querying all properties directly from the <code>getAllLands()</code> smart contract table function
           </p>
         </div>
 
-        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-          <div class="filter-chips">
-            <button class="filter-chip active" data-filter="all">All Properties</button>
-            <button class="filter-chip" data-filter="for-sale">🏷️ For Sale</button>
-            <button class="filter-chip" data-filter="my-lands">👤 Properties I Own</button>
+        <!-- Filter Chips & Refresh -->
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200/70">
+            <button class="filter-chip active text-xs" data-filter="all">All Properties</button>
+            <button class="filter-chip text-xs" data-filter="for-sale">🏷️ For Sale</button>
+            <button class="filter-chip text-xs" data-filter="my-lands">👤 Properties I Own</button>
           </div>
-          <button id="btnRefreshTable" class="btn btn-secondary btn-sm" title="Reload from blockchain">
-            🔄 Refresh
+          
+          <button id="btnRefreshTable" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition shadow-sm flex items-center gap-1.5" title="Reload from blockchain">
+            <span>🔄</span>
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
-      <div class="table-wrapper">
-        <table class="modern-table" id="landsTable">
+      <!-- Modern Responsive Table -->
+      <div class="overflow-x-auto">
+        <table class="modern-table w-full" id="landsTable">
           <thead>
             <tr>
-              <th style="width: 50px;">ID</th>
+              <th style="width: 60px;">ID</th>
               <th>Property Location</th>
               <th>Survey #</th>
               <th>Total Area</th>
               <th>Current Owner</th>
-              <th>Selling Price</th>
-              <th>Market Status</th>
+              <th>Price</th>
+              <th>Status</th>
               <th style="text-align: right;">Action</th>
             </tr>
           </thead>
@@ -154,85 +240,112 @@
             <tr>
               <td colspan="8" class="empty-state-box">
                 <div class="empty-icon">⏳</div>
-                <div>Loading land records directly from the smart contract...</div>
+                <div class="font-medium text-slate-600">Loading land records directly from smart contract...</div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
     </section>
 
-    <!-- Main Section: Register New Land Parcel (Requirement 3, 7, 8) -->
-    <section class="card form-card">
-      <div class="card-header">
-        <div>
-          <h2 class="card-title">➕ Register a New Property Deed</h2>
-          <p class="card-desc">Add your official land parcel into the decentralized registry</p>
+    <!-- Citizen Notice: shown only to non-admin connected wallets -->
+    <div id="citizenNotice" style="display:none;" class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-6 shadow-sm">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg text-blue-700 shrink-0">
+            👤
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-blue-950">Citizen Purchase Portal</h3>
+            <p class="text-xs text-blue-900/80 mt-1 max-w-2xl leading-relaxed">
+              You are connected with a <strong>Citizen Account</strong>. You can browse all available government-allotted land parcels above and purchase them directly with ETH. Official survey deed registration is restricted to the Government Land Authority.
+            </p>
+          </div>
         </div>
+        <span class="badge badge-citizen shrink-0">Citizen Account</span>
+      </div>
+    </div>
+
+    <!-- Main Section: Register New Land Parcel (Government Authority Only) -->
+    <section id="registerSection" style="display:none;" class="bg-white rounded-2xl border border-amber-200/80 shadow-sm p-6 sm:p-7 relative overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-amber-600"></div>
+
+      <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span>🏛️</span>
+            <span>Register Official Survey Parcel</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Government Land Authority: Mint a verified land parcel onto the blockchain for citizen allotment</p>
+        </div>
+        <span class="badge badge-govt">Govt Authority Only</span>
       </div>
 
-      <form id="registerLandForm">
-        <div class="form-grid">
-          <div class="form-field" style="grid-column: span 2;">
-            <label for="landLocation">
-              <span>Property Address / Location *</span>
-              <span class="field-hint">e.g. Plot 404, Green Hills Colony, Sector 12</span>
+      <form id="registerLandForm" class="space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          
+          <!-- Property Address -->
+          <div class="sm:col-span-2 space-y-1.5">
+            <label for="landLocation" class="block text-xs font-semibold text-slate-700">
+              Property Address / Location <span class="text-red-500">*</span>
             </label>
-            <input type="text" id="landLocation" class="input-styled" placeholder="Enter complete property address or landmark" required />
+            <input type="text" id="landLocation" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition" placeholder="e.g. Plot 404, Green Hills Colony, Sector 12" required />
           </div>
 
-          <div class="form-field">
-            <label for="landNumber">
-              <span>Official Survey Number *</span>
-              <span class="field-hint">Government revenue parcel number</span>
+          <!-- Official Survey Number -->
+          <div class="space-y-1.5">
+            <label for="landNumber" class="block text-xs font-semibold text-slate-700">
+              Official Survey Number <span class="text-red-500">*</span>
             </label>
-            <input type="number" id="landNumber" class="input-styled" placeholder="e.g. 108" min="1" required />
+            <input type="number" id="landNumber" min="1" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition" placeholder="e.g. 108" required />
           </div>
 
-          <div class="form-field">
-            <label for="landArea">
-              <span>Total Area (in Square Feet) *</span>
-              <span class="field-hint">e.g. 2400 sq ft</span>
+          <!-- Total Area -->
+          <div class="space-y-1.5">
+            <label for="landArea" class="block text-xs font-semibold text-slate-700">
+              Area (Sq. Feet) <span class="text-red-500">*</span>
             </label>
-            <input type="number" id="landArea" class="input-styled" placeholder="e.g. 2400" min="1" required />
+            <input type="number" id="landArea" min="1" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition" placeholder="e.g. 2400" required />
           </div>
 
-          <div class="form-field">
-            <label for="landPrice">
-              <span>Property Price (in ETH) *</span>
-              <span class="field-hint">Fair valuation or selling price</span>
+          <!-- Allotment Price -->
+          <div class="space-y-1.5">
+            <label for="landPrice" class="block text-xs font-semibold text-slate-700">
+              Allotment Price (ETH) <span class="text-red-500">*</span>
             </label>
-            <input type="number" step="0.001" id="landPrice" class="input-styled" placeholder="e.g. 1.5" min="0.001" required />
+            <input type="number" step="0.001" min="0.001" id="landPrice" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition" placeholder="e.g. 1.5" required />
           </div>
 
-          <div class="form-field" style="justify-content: center;">
-            <label style="cursor: pointer; display: flex; align-items: center; gap: 10px; margin-top: 18px; user-select: none;">
-              <input type="checkbox" id="landListForSale" style="width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer;" checked />
-              <div>
-                <strong style="color: var(--text-primary); font-size: 0.95rem;">Make available for sale immediately</strong>
-                <div class="field-hint">Other buyers can purchase this property right away</div>
-              </div>
+          <!-- Immediate Marketplace Listing Option -->
+          <div class="sm:col-span-3 flex items-center pt-2">
+            <label class="flex items-center gap-3 cursor-pointer select-none">
+              <input type="checkbox" id="landListForSale" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 focus:ring-2" checked />
+              <span class="text-xs font-semibold text-slate-700">List on Marketplace immediately for citizen purchase</span>
             </label>
+          </div>
+
+        </div>
+
+        <!-- Live Calculation Box (Requirement 8 Pure Function) -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">📐 Instant Acreage Calculation</div>
+            <div id="calcAcreage" class="text-base font-bold text-blue-600">0.000 Acres</div>
+            <div class="text-[11px] text-slate-400">Calculated free-of-cost via Solidity pure function (1 acre = 43,560 sq ft)</div>
+          </div>
+          <div class="space-y-1">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">🏛️ Estimated 5% Stamp Duty</div>
+            <div id="calcStampDuty" class="text-base font-bold text-amber-600">0.0000 ETH</div>
+            <div class="text-[11px] text-slate-400">Calculated on-chain via Solidity pure function at 500 basis points</div>
           </div>
         </div>
 
-        <!-- Live Smart Calculator (Requirement 8 Pure Function) -->
-        <div class="calculator-box">
-          <div class="calc-item">
-            <span class="calc-title">📐 Instant Acreage Calculation</span>
-            <span id="calcAcreage" class="calc-val">0.000 Acres</span>
-            <span class="calc-note">Calculated free-of-cost via Solidity pure function (1 acre = 43,560 sq ft)</span>
-          </div>
-          <div class="calc-item">
-            <span class="calc-title">🏛️ Estimated 5% Stamp Duty / Tax</span>
-            <span id="calcStampDuty" class="calc-val">0.0000 ETH</span>
-            <span class="calc-note">Calculated instantly via Solidity pure function at 500 basis points</span>
-          </div>
-        </div>
-
-        <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
-          <button type="submit" id="btnSubmitRegister" class="btn btn-primary" style="padding: 12px 28px;">
-            <span>📝 Register This Property on Blockchain</span>
+        <!-- Submit Button -->
+        <div class="flex justify-end pt-2">
+          <button type="submit" id="btnSubmitRegister" class="px-6 py-2.5 text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition flex items-center gap-2">
+            <span>🏛️</span>
+            <span>Register This Parcel on Blockchain</span>
           </button>
         </div>
       </form>
@@ -245,17 +358,20 @@
     <div class="modal-window">
       <div class="modal-head">
         <div>
-          <h3 class="modal-title">📜 Immutable Deed Transfer History</h3>
-          <p id="historyModalSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;"></p>
+          <h3 class="modal-title flex items-center gap-2">
+            <span>📜</span>
+            <span>Immutable Deed Transfer History</span>
+          </h3>
+          <p id="historyModalSubtitle" class="text-xs text-slate-500 mt-0.5"></p>
         </div>
         <button class="btn-modal-close" id="btnCloseHistoryModal">&times;</button>
       </div>
 
       <div class="modal-desc-box">
-        💡 <strong>Proof of Authenticity:</strong> Every time this land is created, bought, or transferred, a record is permanently written to the <code>OwnershipHistory</code> smart contract. This record is immutable and cannot be deleted or manipulated.
+        💡 <strong>Proof of Authenticity:</strong> Every time this land is minted, bought, or transferred, a permanent record is written into the <code>OwnershipHistory</code> smart contract.
       </div>
 
-      <div class="table-wrapper">
+      <div class="overflow-x-auto p-4 flex-1">
         <table class="modern-table">
           <thead>
             <tr>
@@ -275,49 +391,53 @@
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-secondary" id="btnCloseHistoryBtn">Close History</button>
+        <button class="btn btn-secondary text-xs" id="btnCloseHistoryBtn">Close History</button>
       </div>
     </div>
   </div>
 
   <!-- Modal: Set Asking Price / List for Sale -->
   <div class="modal-overlay" id="updatePriceModal">
-    <div class="modal-window" style="max-width: 460px;">
+    <div class="modal-window" style="max-width: 440px;">
       <div class="modal-head">
         <div>
-          <h3 class="modal-title" id="priceModalTitle">🏷️ Manage Selling Price</h3>
-          <p style="font-size: 0.82rem; color: var(--text-muted);">Set your desired asking price in ETH</p>
+          <h3 class="modal-title flex items-center gap-2" id="priceModalTitle">
+            <span>🏷️</span>
+            <span>Manage Selling Price</span>
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">Set your desired asking price in ETH</p>
         </div>
         <button class="btn-modal-close" id="btnClosePriceModal">&times;</button>
       </div>
 
-      <form id="updatePriceForm">
+      <form id="updatePriceForm" class="p-6 space-y-4">
         <input type="hidden" id="modalLandId" />
         <input type="hidden" id="modalActionType" value="update" />
 
-        <div class="form-field" style="margin-bottom: 16px;">
-          <label for="modalPriceInput">
-            <span>Asking Price (in Ether ETH) *</span>
+        <div class="space-y-1.5">
+          <label for="modalPriceInput" class="block text-xs font-semibold text-slate-700">
+            Asking Price (ETH) <span class="text-red-500">*</span>
           </label>
-          <input type="number" step="0.001" id="modalPriceInput" class="input-styled" placeholder="e.g. 2.5" min="0.001" required />
-          <span class="field-hint" id="modalPriceHint">Buyers will be able to purchase your property for this amount</span>
+          <input type="number" step="0.001" min="0.001" id="modalPriceInput" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition" placeholder="e.g. 2.5" required />
+          <span class="block text-[11px] text-slate-400" id="modalPriceHint">Buyers will be able to purchase your property for this amount</span>
         </div>
 
-        <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" id="btnCancelPriceModal">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btnSubmitPriceModal">Confirm Price</button>
+        <div class="modal-actions !px-0 !pt-4 !pb-0 !bg-transparent border-t border-slate-100 flex justify-end gap-2.5">
+          <button type="button" class="btn btn-secondary text-xs" id="btnCancelPriceModal">Cancel</button>
+          <button type="submit" class="btn btn-primary text-xs" id="btnSubmitPriceModal">Confirm Price</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Real-time Toast Notifications -->
+  <!-- Real-time Toast Notifications Container -->
   <div id="toast-container"></div>
 
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      SafeLand Decentralized Registry &bull; Powered by Ethereum Smart Contracts &bull; 100% Transparent
+  <!-- Minimalist Clean Footer -->
+  <footer class="border-t border-slate-200/80 bg-white py-6 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+      <div>SafeLand Decentralized Registry &bull; Powered by Ethereum Smart Contracts</div>
+      <div class="font-medium text-slate-400">Government Authority & Citizen Architecture</div>
     </div>
   </footer>
 

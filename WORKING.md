@@ -1,30 +1,31 @@
-# 📖 Land Registry DApp - System Architecture & Workflow Guide
+# 📖 SafeLand DApp - Architecture & Complete Workflow Guide
 
-This document provides a comprehensive, step-by-step breakdown of how the **Blockchain Land Registry** operates, from low-level smart contract mechanics to the user interface.
+This document provides a comprehensive, step-by-step breakdown of how the **SafeLand Decentralized Registry** operates, from smart contract logic and role-based access controls to the user interface.
 
 ---
 
 ## 🏛️ System Architecture Diagram
-![alt text](<1. Blockchain Land Registry Architecture.png>)
+
 ```mermaid
 flowchart TD
     subgraph ClientLayer ["Client Layer (Frontend)"]
-        UI["Web Dashboard (index.html, style.css)"]
-        App["UI Controller (app.js)"]
-        WalletMgr["Wallet Manager (wallet.js)"]
-        ContractSvc["Contract Bridge (contract.js)"]
-        MM["MetaMask Extension"]
+        UI["Modern Web Dashboard\n(Tailwind CSS + HTML)"]
+        App["UI Controller\n(app.js - Role & View Logic)"]
+        WalletMgr["Wallet Manager\n(wallet.js - MetaMask & Switcher)"]
+        ContractSvc["Contract Bridge\n(contract.js - Ethers.js)"]
+        MM["MetaMask Browser Extension"]
     end
 
-    subgraph BlockchainLayer ["Ethereum Blockchain (Ganache Testnet)"]
+    subgraph BlockchainLayer ["Ethereum Blockchain (Ganache Local)"]
         subgraph Contracts ["Smart Contracts"]
-            LR["LandRegistry.sol\n- Parcellation\n- Marketplace\n- Table Functions\n- Pure & View Utilities"]
+            LR["LandRegistry.sol\n- onlyContractOwner on registerLand()\n- onlyLandOwner on pricing/listing\n- buyLand() with CEI pattern\n- Pure & View Utilities"]
             OH["OwnershipHistory.sol\n- Immutable Deed History\n- Contract-to-Contract Target"]
         end
         
-        subgraph Accounts ["Accounts (EOAs)"]
-            Seller["Seller EOA\n(Receives ETH on Sale)"]
-            Buyer["Buyer EOA\n(Purchases with ETH)"]
+        subgraph Accounts ["Participant EOAs"]
+            Govt["🏛️ Government Land Authority EOA\n0xFc8D...7569 (Contract Owner)"]
+            CitizenBuyer["👤 Citizen Buyer EOA\n(Purchases allotment with ETH)"]
+            CitizenSeller["👤 Citizen Seller EOA\n(Receives ETH on resale)"]
         end
     end
 
@@ -34,201 +35,200 @@ flowchart TD
     WalletMgr <--> MM
     ContractSvc <--> MM
     MM <-->|"JSON-RPC (Port 7545)"| BlockchainLayer
-    ContractSvc -->|"Calls View / State Functions"| LR
-    LR -->|"Contract-to-Contract (recordTransfer)"| OH
-    LR -->|"Contract-to-Account (ETH Transfer)"| Seller
-    Buyer -->|"ETH Payment (msg.value)"| LR
+    Govt -->|"Mints official parcels\n(onlyContractOwner)"| LR
+    CitizenBuyer -->|"Direct ETH Payment\n(msg.value)"| LR
+    LR -->|"Contract-to-Account\n(ETH Transfer)"| CitizenSeller
+    LR -->|"Contract-to-Contract\n(recordTransfer)"| OH
 ```
+
+---
+
+## 👥 Role-Based Access Control Architecture
+
+The platform partitions user actions across two distinct roles:
+
+| Feature / Operation | 🏛️ Government Authority (`0xFc8D...7569`) | 👤 Citizen (`0x271c...74B0`, etc.) |
+|---|---|---|
+| **Connect Wallet** | Shows `🏛️ Government Authority` badge | Shows `👤 Citizen` badge |
+| **Register Land Parcel** | ✅ Allowed (`onlyContractOwner`) | ❌ Reverts with `"Not authorized"` |
+| **Registration Form UI** | ✅ Form visible | ❌ Replaced with Citizen Purchase Notice |
+| **Buy Government Allotment** | ❌ Reverts (Owner cannot buy own land) | ✅ Allowed with direct ETH payment |
+| **List / Delist Owned Land** | ✅ Allowed for lands owned | ✅ Allowed for lands owned |
+| **Update Asking Price** | ✅ Allowed for lands owned | ✅ Allowed for lands owned |
+| **Deed Transfer History** | ✅ Publicly auditable | ✅ Publicly auditable |
+| **Directory Owner Badge** | Displays `🏛️ GOVT PROPERTY` | Displays regular formatted address |
 
 ---
 
 ## 🔄 End-to-End Workflows
 
-### 1. Wallet Connection & Network Synchronization Workflow
+### 1. Wallet Connection & One-Click Account Switching
 *(Satisfies Requirement 2: Connect Wallet)*
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User
-    participant UI as Frontend (index.html)
+    participant UI as Tailwind Frontend
     participant Wallet as wallet.js
+    participant App as app.js
     participant MM as MetaMask
-    participant Chain as Ganache Node (127.0.0.1:7545)
+    participant LR as LandRegistry.sol
 
-    User->>UI: Clicks "Connect MetaMask"
+    User->>UI: Clicks "Connect MetaMask Wallet"
     UI->>Wallet: Wallet.connect()
     Wallet->>MM: eth_requestAccounts
-    MM-->>User: Prompts account permission popup
+    MM-->>User: Prompts account authorization popup
     User->>MM: Approves connection
     MM-->>Wallet: Returns active account address
     Wallet->>MM: wallet_switchEthereumChain (0x539 / 1337)
-    opt Network not added yet
-        MM-->>Wallet: Error 4902 (Not Found)
-        Wallet->>MM: wallet_addEthereumChain (Ganache Local)
-        MM-->>User: Prompt to add Ganache Local
-        User->>MM: Approves
+    Wallet->>UI: Renders short address, balance, and "🟢 Connected" badge
+    App->>LR: contractOwner() [view]
+    LR-->>App: 0xFc8D...7569 (Govt Authority)
+    alt Active account == contractOwner
+        App->>UI: Sets role badge to "🏛️ Government Authority" & shows Registration Form
+    else Active account != contractOwner
+        App->>UI: Sets role badge to "👤 Citizen" & shows Citizen Notice
     end
-    Wallet->>Chain: getBalance(address)
-    Chain-->>Wallet: Account balance in Wei
-    Wallet->>UI: Renders address, 99.99 ETH balance, "🟢 Connected" badge
+
+    opt User wants to change role
+        User->>UI: Clicks "🔄 Switch Account"
+        UI->>Wallet: Wallet.switchAccount()
+        Wallet->>MM: wallet_requestPermissions({eth_accounts: {}})
+        MM-->>User: Opens account picker popup directly
+        User->>MM: Selects another account
+        MM-->>Wallet: Returns selected account
+        Wallet->>App: onAccountChanged(newAccount)
+        App->>UI: Instantly updates role badge, visible sections, and table badges
+    end
 ```
 
 **Key Highlights:**
-- **Zero-Friction Onboarding**: Automatically detects whether the user is on the local network (`0x539`) and prompts MetaMask to switch seamlessly.
-- **Dynamic Event Handling**: Listens to `accountsChanged` and `chainChanged` events; switching accounts in MetaMask instantly updates the UI without page reload.
+- **Zero-Friction Switching**: The dedicated **Switch Account** button calls `wallet_requestPermissions` so users can jump between Government and Citizen profiles without manually opening extension menus.
+- **Dynamic Role Badge**: Header reflects the active account's permissions in real-time.
 
 ---
 
-### 2. Land Parcels Table Querying Workflow
-*(Satisfies Requirement 5: Table Function & Requirement 8: View Function)*
+### 2. Government Land Registration Workflow
+*(Satisfies Requirement 1: Access Control, Requirement 3: Data Op, Requirement 4: Constructor, Requirement 6: Contract-to-Contract, Requirement 7: `require`, Requirement 8: `pure`)*
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant UI as Frontend Table
-    participant App as app.js
-    participant Service as contract.js
-    participant LR as LandRegistry.sol
-
-    App->>Service: ContractService.getAllLands()
-    Service->>LR: getAllLands() [view]
-    LR-->>Service: Land[] (Array of all struct Land records)
-    Service-->>App: Raw Land objects
-    loop For each land parcel
-        App->>Service: convertSqFtToAcres(areaSqFt) [pure]
-        Service->>LR: convertSqFtToAcres(areaSqFt)
-        LR-->>App: Scaled acreage value
-        App->>UI: Appends <tr> row with Parcel ID, Survey #, Owner, Price, Badges & Actions
-    end
-    App->>UI: Updates quick stat counters (Total Lands, Lands For Sale)
-```
-
-**Key Highlights:**
-- **Batch Retrieval**: Rather than making individual RPC calls for each parcel ID, `getAllLands()` returns an array of structs in a single call, optimizing network performance.
-- **Smart Ownership Detection**: The UI compares `land.currentOwner` with the connected account; if identical, it tags the parcel with a **`YOU`** badge and displays management actions (**Price**, **Delist**) rather than a **Buy** button.
-
----
-
-### 3. Registering a New Land Parcel Workflow
-*(Satisfies Requirement 3: One Function, Requirement 6: Contract-to-Contract, Requirement 7: `require`, Requirement 8: `pure`)*
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Property Owner
+    actor Govt as 🏛️ Govt Authority
     participant Form as Register Form
     participant App as app.js
     participant MM as MetaMask
     participant LR as LandRegistry.sol
     participant OH as OwnershipHistory.sol
 
-    User->>Form: Enters Location, Survey #, Area (sq ft), Asking Price (ETH)
-    Form->>App: Input event on Area / Price
+    Govt->>Form: Enters Location, Survey #, Area (sq ft), Price (ETH)
+    Form->>App: Input event on Area & Price fields
     App->>LR: convertSqFtToAcres(area) [pure]
     App->>LR: calculateStampDuty(price, 500) [pure]
-    LR-->>App: Calculated Acres and 5% Stamp Duty in ETH
-    App->>Form: Real-time calculation preview updated live!
-    User->>Form: Clicks "Register Land Parcel"
-    Form->>App: Submits form data
-    App->>MM: Invokes registerLand(...) transaction
-    MM-->>User: Prompts transaction confirmation & gas fee
-    User->>MM: Confirms
-    MM->>LR: registerLand(location, area, landNumber, price, listForSale)
-    
+    LR-->>App: Returns scaled acres and 5% stamp duty
+    App->>Form: Updates live calculation preview tiles
+    Govt->>Form: Clicks "Register This Parcel on Blockchain"
+    Form->>App: Submits parcel data
+    App->>MM: Sends registerLand(location, area, survey#, price, listForSale)
+    MM-->>Govt: Prompts confirmation popup
+    Govt->>MM: Confirms transaction
+    MM->>LR: registerLand(...)
+
     rect rgb(240, 248, 255)
-        Note over LR: Execution inside Smart Contract
-        LR->>LR: require(location.length > 0)
+        Note over LR: Smart Contract Validations & Execution
+        LR->>LR: require(msg.sender == contractOwner, "Not authorized")
+        LR->>LR: require(bytes(location).length > 0)
         LR->>LR: require(areaSqFt > 0)
         LR->>LR: require(landNumber > 0)
         LR->>LR: totalLandsCount++
         LR->>LR: lands[newId] = Land(...)
         LR->>LR: allLandIds.push(newId)
         LR->>OH: recordTransfer(newId, address(0), msg.sender, price) [Contract-to-Contract]
-        OH->>OH: landHistory[newId].push(TransferRecord)
+        OH->>OH: landHistory[newId].push(genesisRecord)
         LR->>LR: emit LandRegistered(...)
+        LR->>LR: emit LandListedForSale(...)
     end
 
     LR-->>MM: Transaction mined (Receipt)
-    MM-->>App: Success receipt
-    App->>User: Displays success toast with Tx hash
-    App->>App: Automatically refreshes the table!
+    MM-->>App: Transaction success
+    App->>Govt: Displays success toast
+    App->>App: Refreshes table via getAllLands() -> Parcel displays "🏛️ GOVT PROPERTY"
 ```
 
 **Key Highlights:**
-- **Contract-to-Contract Initial Logging**: Upon creation, `LandRegistry` calls `OwnershipHistory.recordTransfer(...)` with `from: 0x0`, creating an immutable genesis deed for the parcel.
-- **Live Pure Functions**: The form demonstrates `pure` functions before transaction submission, computing acreage and government stamp duty dynamically.
+- **On-Chain Enforcement**: The `onlyContractOwner` modifier ensures that only the authorized government administrator can mint new parcels.
+- **Contract-to-Contract Genesis Deed**: Automatically invokes `OwnershipHistory.recordTransfer(...)` with `from: address(0)`, anchoring an immutable origin deed.
 
 ---
 
-### 4. Buying Land & Ether Settlement Workflow
+### 3. Citizen Land Purchase & Ether Settlement Workflow
 *(Satisfies Requirement 6: Contract-to-Account & Contract-to-Contract, Requirement 7: `require`)*
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Buyer as Buyer EOA
-    participant UI as DApp Table
+    actor Buyer as 👤 Citizen Buyer
+    participant UI as Marketplace Table
     participant MM as MetaMask
     participant LR as LandRegistry.sol
-    participant Seller as Seller EOA
+    participant Seller as 🏛️ Govt / Seller EOA
     participant OH as OwnershipHistory.sol
 
-    Buyer->>UI: Clicks "Buy (1.5 ETH)" on Parcel #1
-    UI->>Buyer: Shows confirmation dialog
+    Buyer->>UI: Clicks "🛒 Buy (X ETH)" on available parcel
+    UI->>Buyer: Shows purchase confirmation summary
     Buyer->>UI: Confirms purchase
-    UI->>MM: Invokes buyLand(1) with value: 1.5 ETH
-    MM-->>Buyer: Prompts MetaMask transaction popup
-    Buyer->>MM: Approves 1.5 ETH payment + gas
-    MM->>LR: buyLand(1) { value: 1.5 ether }
+    UI->>MM: Invokes buyLand(landId) with value: X ETH
+    MM-->>Buyer: Prompts MetaMask payment popup
+    Buyer->>MM: Approves ETH payment
+    MM->>LR: buyLand(landId) { value: X ETH }
 
     rect rgb(255, 250, 240)
-        Note over LR: State Validation (require)
+        Note over LR: State Validations (require)
         LR->>LR: require(land.isForSale == true)
         LR->>LR: require(msg.sender != land.currentOwner)
         LR->>LR: require(msg.value >= land.price)
-        
+
         Note over LR: State Transition (Checks-Effects-Interactions)
         LR->>LR: address payable previousOwner = land.currentOwner
         LR->>LR: land.currentOwner = payable(msg.sender)
         LR->>LR: land.isForSale = false
         LR->>LR: land.status = LandStatus.Sold
-        
+
         Note over LR: Financial Settlement (Contract-to-Account)
-        LR->>Seller: previousOwner.call{value: 1.5 ETH}("")
-        Seller-->>LR: Ether accepted (Balance increases by 1.5 ETH)
-        
-        Note over LR: Deed Audit Trail (Contract-to-Contract)
-        LR->>OH: recordTransfer(1, previousOwner, msg.sender, 1.5 ETH)
+        LR->>Seller: previousOwner.call{value: salePrice}("")
+        Seller-->>LR: ETH balance credited
+
+        Note over LR: Audit Trail (Contract-to-Contract)
+        LR->>OH: recordTransfer(landId, previousOwner, msg.sender, price)
         OH->>OH: Appends TransferRecord to parcel history
 
-        opt Excess Ether Sent
+        opt Excess Payment
             LR->>Buyer: payable(msg.sender).call{value: refundAmount}("")
         end
 
-        LR->>LR: emit LandPurchased(1, previousOwner, msg.sender, price)
+        LR->>LR: emit LandPurchased(landId, previousOwner, msg.sender, price)
     end
 
     LR-->>MM: Transaction confirmed
     MM-->>UI: Receipt received
-    UI->>Buyer: Displays success alert!
-    UI->>UI: Table refreshes: Buyer is now tagged as "YOU"!
+    UI->>Buyer: Displays success toast
+    UI->>UI: Table refreshes: Buyer is now tagged as "YOU OWN THIS"!
 ```
 
 **Key Highlights:**
-- **Contract-to-Account**: Ether moves from the buyer's wallet, through the contract, and directly into the seller's Externally Owned Account (`previousOwner.call{value: salePrice}("")`).
-- **Reentrancy Protection**: State variables (`land.currentOwner`, `isForSale`) are updated *before* transferring Ether, adhering strictly to the **Checks-Effects-Interactions (CEI)** security pattern.
-- **Contract-to-Contract Deed Logging**: Concurrently triggers `OwnershipHistory.recordTransfer(...)` to permanently log the deed change on-chain.
+- **Contract-to-Account**: Ether moves securely from the buyer, through the smart contract, and directly to the seller's Externally Owned Account without escrow lockups.
+- **CEI Security Pattern**: All internal ownership and status variables are modified *before* triggering the external Ether call, mitigating reentrancy attacks.
 
 ---
 
-### 5. Viewing Immutable Deed Audit Trail Workflow
-*(Satisfies Requirement 6: Contract-to-Contract Historical Query)*
+### 4. Immutable Historical Deed Audit Trail Workflow
+*(Satisfies Requirement 6: Contract-to-Contract Historical Query & Requirement 8: View Function)*
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User
+    actor User as Citizen / Auditor
     participant UI as Frontend
     participant Modal as History Modal
     participant Service as contract.js
@@ -239,41 +239,43 @@ sequenceDiagram
     UI->>Service: ContractService.getLandHistory(landId)
     Service->>OH: getHistory(landId) [view]
     OH-->>Service: TransferRecord[] (from, to, price, timestamp)
-    Service-->>Modal: Formatted historical deed records
-    Modal->>User: Displays chronological table of all past deeds with addresses & timestamps
+    Service-->>Modal: Formats records (translates address(0) to "Initial Government Deed Mint")
+    Modal->>User: Displays chronological table with addresses, prices paid, and timestamps
 ```
-
-**Key Highlights:**
-- Demonstrates distributed separation of concerns: property market operations live in `LandRegistry.sol`, while historical transfer audits live in `OwnershipHistory.sol`.
 
 ---
 
-## 🛡️ Security & Access Control Mechanics
+## 🛡️ Security & Access Control Reference
 
-| Modifier / Guard | Target Contract | Purpose | Protection Mechanism |
+| Modifier / Pattern | Contract | Protected Method | Security Mechanism |
 |---|---|---|---|
-| `onlyContractOwner` | `LandRegistry.sol` | Admin operations (e.g. updating the history contract link) | `require(msg.sender == contractOwner, "Not authorized");` |
-| `onlyLandOwner(uint256 _id)` | `LandRegistry.sol` | Listing parcel, updating price, delisting | `require(lands[_id].currentOwner == msg.sender, "Only land owner");` |
-| `landExists(uint256 _id)` | `LandRegistry.sol` | Validates parcel existence | `require(lands[_id].id != 0, "Land parcel does not exist");` |
-| `onlyAuthorized` | `OwnershipHistory.sol` | Prevents arbitrary modification of deed records | `require(msg.sender == registryContract || msg.sender == admin);` |
-| Checks-Effects-Interactions | `LandRegistry.sol` | Prevents reentrancy during Ether transfer | State updated before `.call{value: ...}` external transfer |
+| `onlyContractOwner` | `LandRegistry.sol` | `registerLand()`, `updateHistoryContract()` | `require(msg.sender == contractOwner, "Not authorized: Only contract owner can perform this");` |
+| `onlyLandOwner(id)` | `LandRegistry.sol` | `listLandForSale()`, `delistLand()`, `updatePrice()` | `require(lands[_id].currentOwner == msg.sender, "Not authorized: Only the land owner can perform this");` |
+| `landExists(id)` | `LandRegistry.sol` | `buyLand()`, `getLand()` | `require(lands[_id].id != 0, "Land parcel does not exist");` |
+| `onlyAuthorized` | `OwnershipHistory.sol` | `recordTransfer()` | `require(msg.sender == registryContract \|\| msg.sender == admin);` |
+| **Checks-Effects-Interactions (CEI)** | `LandRegistry.sol` | `buyLand()` | Updates owner and status state variables before making external `.call{value: ...}`. |
 
 ---
 
 ## 🎯 Viva & Presentation Cheat-Sheet
 
-When presenting or demonstrating this project, follow this roadmap to showcase all 9 requirements:
+When demonstrating the project, follow this 5-minute walkthrough to cover all requirements:
 
-1. **Show Contracts (Req 1, 4, 7, 8)**:
-   - Open [`contracts/LandRegistry.sol`](file:///contracts/LandRegistry.sol). Point to the **Constructor** at lines 77–82, **Modifiers** at lines 57–72, **pure functions** (`convertSqFtToAcres`, `calculateStampDuty`) at lines 235–251, and `require` statements in `buyLand` at lines 174–177.
-2. **Show Contract-to-Contract (Req 6)**:
-   - Point to line 189 in `LandRegistry.sol` where `historyContract.recordTransfer(...)` is called, and show the implementation in [`contracts/OwnershipHistory.sol`](file:///contracts/OwnershipHistory.sol).
-3. **Show Contract-to-Account (Req 6)**:
-   - Point to line 186 in `LandRegistry.sol` where Ether is forwarded to the seller via `previousOwner.call{value: salePrice}("")`.
-4. **Show Wallet Connection (Req 2)**:
-   - Show the green **`🟢 Connected`** badge, address, and live ETH balance in the top bar of the frontend.
-5. **Show Table (Req 5)**:
-   - Demonstrate the dynamic table in the browser with search, filters (**All Parcels**, **For Sale Only**, **My Parcels**), and the **`YOU`** ownership badge.
+1. **Show Role-Based Minting (Req 1, 3, 4, 7)**:
+   - Connect with Account 0 (`0xFc8D...7569`). Point to the **`🏛️ Government Authority`** badge.
+   - Point to line 127 in `LandRegistry.sol` showing the `onlyContractOwner` modifier on `registerLand()`.
+   - Register a property: watch the live pure function acreage & stamp duty calculations update in real time.
+2. **Show Directory & Govt Badge (Req 5, 8)**:
+   - Notice the newly minted property appears in the table with the **`🏛️ GOVT PROPERTY`** badge.
+   - Point to `getAllLands()` in `LandRegistry.sol` lines 261–267.
+3. **Show Account Switching (Req 2)**:
+   - Click **`🔄 Switch Account`** in the top bar. Pick Account 1 (`0x271c...74B0`).
+   - The UI automatically updates: role badge switches to **`👤 Citizen`**, the registration form disappears, and the Citizen Purchase Portal notice appears.
+4. **Show Purchase & Contract-to-Account (Req 6, 7)**:
+   - As Citizen, click **`🛒 Buy`** on the government property.
+   - Confirm in MetaMask: Ether transfers to Government Account 0, deed transfers to Citizen Account 1.
+   - The parcel now displays **`YOU OWN THIS`** for the citizen.
+5. **Show Contract-to-Contract Deed History (Req 6)**:
+   - Click **`📜 History`** on the purchased property: show the immutable deed trail from `Initial Government Deed Mint` $\rightarrow$ Citizen purchase with full timestamps.
 6. **Show Test Suite (Req 9)**:
-   - In terminal, run `npm test` and show all **14 tests passing** with 100% green checkmarks.
-
+   - In terminal, run `npx truffle test` and demonstrate **15 passing tests (100% green)**.
