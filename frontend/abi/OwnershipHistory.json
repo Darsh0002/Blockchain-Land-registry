@@ -5461,12 +5461,12 @@
         }
       },
       "links": {},
-      "address": "0xB874745aB90a20C8e78579CB38413f0a2339dba7",
-      "transactionHash": "0x26777ccfa57b5a7561ccdeefd75a3b8b565c1a3f883288f09cbba2a398b6ca29"
+      "address": "0x6C81C80B5ba839Bb9C169DF9eADB898F9fa4eD93",
+      "transactionHash": "0xbd857c95c4168385df068d9117b6f880f25607cf6e1ca4681a30ee8038220c2b"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-11-01T08:11:25.567Z",
+  "updatedAt": "2026-11-02T04:46:26.438Z",
   "networkType": "ethereum",
   "devdoc": {
     "details": "Manages the immutable audit trail of land ownership transfers. Demonstrates Contract-to-Contract interaction when invoked by LandRegistry.",

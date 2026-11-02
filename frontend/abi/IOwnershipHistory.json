@@ -9538,7 +9538,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-11-01T08:11:22.827Z",
+  "updatedAt": "2026-11-02T04:46:13.458Z",
   "devdoc": {
     "details": "Interface for Contract-to-Contract communication with OwnershipHistory.",
     "kind": "dev",

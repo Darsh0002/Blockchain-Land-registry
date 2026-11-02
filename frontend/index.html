@@ -29,6 +29,9 @@
     }
   </script>
 
+  <!-- Lucide Icons Library (Vector SVGs) -->
+  <script src="js/lucide.min.js"></script>
+
   <!-- Custom Component Styles -->
   <link rel="stylesheet" href="css/style.css">
   
@@ -43,13 +46,14 @@
       
       <!-- Brand Logo & Title -->
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-sm shadow-blue-500/20">
-          🏡
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
+          <i data-lucide="building-2" class="w-5 h-5"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
             <span class="font-bold text-lg tracking-tight text-slate-900">SafeLand</span>
-            <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/70">
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/70 flex items-center gap-1">
+              <i data-lucide="shield-check" class="w-3 h-3 text-blue-600"></i>
               Ethereum Verified
             </span>
           </div>
@@ -62,12 +66,12 @@
         <span id="roleBadge"></span>
         
         <button id="btnSwitchAccount" class="btn btn-secondary text-xs font-semibold rounded-xl transition flex items-center gap-1.5" style="display:none;" title="Switch MetaMask account">
-          <span>🔄</span>
+          <i data-lucide="arrow-left-right" class="w-3.5 h-3.5 text-slate-600"></i>
           <span class="hidden sm:inline">Switch Account</span>
         </button>
 
         <button id="btnConnectWallet" class="btn btn-primary text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition flex items-center gap-2">
-          <span id="walletBtnIcon">🦊</span>
+          <span id="walletBtnIcon" class="flex items-center"><i data-lucide="wallet" class="w-4 h-4"></i></span>
           <span id="walletBtnText">Connect MetaMask Wallet</span>
         </button>
       </div>
@@ -82,7 +86,7 @@
     <section class="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7 shadow-sm">
       <div class="mb-5">
         <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <span>✨</span>
+          <i data-lucide="sparkles" class="w-4 h-4 text-blue-600"></i>
           <span>How Blockchain Land Registry Works in 3 Simple Steps</span>
         </h2>
         <p class="text-xs text-slate-500 mt-0.5">Tamper-proof title records, zero forged paperwork, and direct peer-to-peer property settlement.</p>
@@ -93,7 +97,10 @@
         <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition">
           <div class="flex items-center gap-2 mb-2">
             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">STEP 1</span>
-            <h3 class="font-semibold text-sm text-slate-900">🏛️ Government Minting</h3>
+            <h3 class="font-semibold text-sm text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="landmark" class="w-4 h-4 text-amber-600"></i>
+              Government Minting
+            </h3>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed">
             Only the Government Authority registers official survey parcels directly onto the smart contract ledger.
@@ -104,7 +111,10 @@
         <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition">
           <div class="flex items-center gap-2 mb-2">
             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">STEP 2</span>
-            <h3 class="font-semibold text-sm text-slate-900">📜 Audit Deed Trail</h3>
+            <h3 class="font-semibold text-sm text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="file-check" class="w-4 h-4 text-blue-600"></i>
+              Audit Deed Trail
+            </h3>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed">
             Citizens can inspect the immutable historical chain of ownership transfers recorded in the smart contract.
@@ -115,7 +125,10 @@
         <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition">
           <div class="flex items-center gap-2 mb-2">
             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">STEP 3</span>
-            <h3 class="font-semibold text-sm text-slate-900">🤝 Direct Purchase</h3>
+            <h3 class="font-semibold text-sm text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="handshake" class="w-4 h-4 text-emerald-600"></i>
+              Direct Purchase
+            </h3>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed">
             Payment in ETH goes directly to the seller via contract-to-account logic; deed ownership updates instantly.
@@ -132,12 +145,15 @@
         <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <div>
             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>🦊</span>
+              <i data-lucide="wallet-cards" class="w-4 h-4 text-slate-700"></i>
               <span>Your Wallet & Network</span>
             </h2>
             <p class="text-xs text-slate-500">Live Web3 provider connection status</p>
           </div>
-          <span id="connectionBadge" class="badge badge-neutral">⚪ Not Connected</span>
+          <span id="connectionBadge" class="badge badge-neutral">
+            <i data-lucide="circle-slash" class="w-3.5 h-3.5 text-slate-400"></i>
+            Not Connected
+          </span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -167,8 +183,8 @@
       <div class="space-y-4 flex flex-col justify-between">
         <!-- Counter 1 -->
         <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex items-center gap-4 flex-1">
-          <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-xl text-blue-600 shrink-0">
-            📜
+          <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+            <i data-lucide="files" class="w-6 h-6"></i>
           </div>
           <div>
             <div class="text-xs font-medium text-slate-500">Total Registered Lands</div>
@@ -179,8 +195,8 @@
 
         <!-- Counter 2 -->
         <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex items-center gap-4 flex-1">
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-xl text-emerald-600 shrink-0">
-            🏷️
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+            <i data-lucide="tag" class="w-6 h-6"></i>
           </div>
           <div>
             <div class="text-xs font-medium text-slate-500">Available For Sale</div>
@@ -198,8 +214,9 @@
       <!-- Toolbar -->
       <div class="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="text-lg font-bold text-slate-900">
-            📋 Verified Land Directory & Marketplace
+          <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="layout-grid" class="w-5 h-5 text-slate-700"></i>
+            <span>Verified Land Directory & Marketplace</span>
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">
             Querying all properties directly from the <code>getAllLands()</code> smart contract table function
@@ -210,12 +227,18 @@
         <div class="flex items-center gap-2.5 flex-wrap">
           <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200/70">
             <button class="filter-chip active text-xs" data-filter="all">All Properties</button>
-            <button class="filter-chip text-xs" data-filter="for-sale">🏷️ For Sale</button>
-            <button class="filter-chip text-xs" data-filter="my-lands">👤 Properties I Own</button>
+            <button class="filter-chip text-xs flex items-center gap-1" data-filter="for-sale">
+              <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+              <span>For Sale</span>
+            </button>
+            <button class="filter-chip text-xs flex items-center gap-1" data-filter="my-lands">
+              <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+              <span>Properties I Own</span>
+            </button>
           </div>
           
           <button id="btnRefreshTable" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition shadow-sm flex items-center gap-1.5" title="Reload from blockchain">
-            <span>🔄</span>
+            <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
             <span>Refresh</span>
           </button>
         </div>
@@ -239,7 +262,7 @@
           <tbody id="landsTableBody">
             <tr>
               <td colspan="8" class="empty-state-box">
-                <div class="empty-icon">⏳</div>
+                <div class="empty-icon"><i data-lucide="loader-2" class="w-7 h-7 text-blue-500 animate-spin mx-auto mb-2"></i></div>
                 <div class="font-medium text-slate-600">Loading land records directly from smart contract...</div>
               </td>
             </tr>
@@ -253,8 +276,8 @@
     <div id="citizenNotice" style="display:none;" class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-6 shadow-sm">
       <div class="flex items-start justify-between gap-4">
         <div class="flex gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg text-blue-700 shrink-0">
-            👤
+          <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-700 shrink-0">
+            <i data-lucide="user-check" class="w-5 h-5"></i>
           </div>
           <div>
             <h3 class="text-sm font-bold text-blue-950">Citizen Purchase Portal</h3>
@@ -263,7 +286,10 @@
             </p>
           </div>
         </div>
-        <span class="badge badge-citizen shrink-0">Citizen Account</span>
+        <span class="badge badge-citizen shrink-0 flex items-center gap-1">
+          <i data-lucide="user" class="w-3.5 h-3.5"></i>
+          Citizen Account
+        </span>
       </div>
     </div>
 
@@ -274,12 +300,15 @@
       <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
         <div>
           <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <span>🏛️</span>
+            <i data-lucide="stamp" class="w-4 h-4 text-amber-600"></i>
             <span>Register Official Survey Parcel</span>
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">Government Land Authority: Mint a verified land parcel onto the blockchain for citizen allotment</p>
         </div>
-        <span class="badge badge-govt">Govt Authority Only</span>
+        <span class="badge badge-govt flex items-center gap-1">
+          <i data-lucide="landmark" class="w-3.5 h-3.5"></i>
+          Govt Authority Only
+        </span>
       </div>
 
       <form id="registerLandForm" class="space-y-6">
@@ -330,12 +359,18 @@
         <!-- Live Calculation Box (Requirement 8 Pure Function) -->
         <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">📐 Instant Acreage Calculation</div>
+            <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <i data-lucide="ruler" class="w-3.5 h-3.5 text-blue-600"></i>
+              <span>Instant Acreage Calculation</span>
+            </div>
             <div id="calcAcreage" class="text-base font-bold text-blue-600">0.000 Acres</div>
             <div class="text-[11px] text-slate-400">Calculated free-of-cost via Solidity pure function (1 acre = 43,560 sq ft)</div>
           </div>
           <div class="space-y-1">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">🏛️ Estimated 5% Stamp Duty</div>
+            <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <i data-lucide="scale" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Estimated 5% Stamp Duty</span>
+            </div>
             <div id="calcStampDuty" class="text-base font-bold text-amber-600">0.0000 ETH</div>
             <div class="text-[11px] text-slate-400">Calculated on-chain via Solidity pure function at 500 basis points</div>
           </div>
@@ -344,7 +379,7 @@
         <!-- Submit Button -->
         <div class="flex justify-end pt-2">
           <button type="submit" id="btnSubmitRegister" class="px-6 py-2.5 text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition flex items-center gap-2">
-            <span>🏛️</span>
+            <i data-lucide="shield-plus" class="w-4 h-4"></i>
             <span>Register This Parcel on Blockchain</span>
           </button>
         </div>
@@ -359,7 +394,7 @@
       <div class="modal-head">
         <div>
           <h3 class="modal-title flex items-center gap-2">
-            <span>📜</span>
+            <i data-lucide="file-clock" class="w-4 h-4 text-blue-600"></i>
             <span>Immutable Deed Transfer History</span>
           </h3>
           <p id="historyModalSubtitle" class="text-xs text-slate-500 mt-0.5"></p>
@@ -367,8 +402,9 @@
         <button class="btn-modal-close" id="btnCloseHistoryModal">&times;</button>
       </div>
 
-      <div class="modal-desc-box">
-        💡 <strong>Proof of Authenticity:</strong> Every time this land is minted, bought, or transferred, a permanent record is written into the <code>OwnershipHistory</code> smart contract.
+      <div class="modal-desc-box flex items-start gap-2">
+        <i data-lucide="info" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
+        <span><strong>Proof of Authenticity:</strong> Every time this land is minted, bought, or transferred, a permanent record is written into the <code>OwnershipHistory</code> smart contract.</span>
       </div>
 
       <div class="overflow-x-auto p-4 flex-1">
@@ -402,7 +438,7 @@
       <div class="modal-head">
         <div>
           <h3 class="modal-title flex items-center gap-2" id="priceModalTitle">
-            <span>🏷️</span>
+            <i data-lucide="tag" class="w-4 h-4 text-blue-600"></i>
             <span>Manage Selling Price</span>
           </h3>
           <p class="text-xs text-slate-500 mt-0.5">Set your desired asking price in ETH</p>
@@ -445,5 +481,13 @@
   <script src="js/wallet.js"></script>
   <script src="js/contract.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    // Initialize all Lucide vector icons on DOM ready
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
 </body>
 </html>

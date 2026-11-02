@@ -12,6 +12,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Lucide Vector Icons normalization */
+svg.lucide {
+  display: inline-block;
+  vertical-align: -0.125em;
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
 /* Monospace text */
 .font-mono, .mono {
   font-family: var(--font-mono) !important;

@@ -23255,12 +23255,12 @@
         }
       },
       "links": {},
-      "address": "0xF8453A2207dc24F280481251a5B5DFCE373875f6",
-      "transactionHash": "0x881740a6388d0887b9fc63534e102e02db824d4bd04d286ab0a49121f87d1c83"
+      "address": "0x145Bb4A72F20306AcD4bb45fE234C18DAFDF42dC",
+      "transactionHash": "0x4f45443569b977d59078820e10a338ba15b642a6adb3600b5d9b77f1373d6fb3"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-11-01T08:11:25.573Z",
+  "updatedAt": "2026-11-02T04:46:26.443Z",
   "networkType": "ethereum",
   "devdoc": {
     "details": "Comprehensive Land Registry Smart Contract covering all course requirements: 1. Properly written contract with access controls, events, and structs. 2. Connects to frontend wallet for transactions. 3. Operational functions: registerLand, listLandForSale, buyLand, updatePrice, delistLand. 4. Constructor initializing contract owner and OwnershipHistory contract reference. 5. Table Function: getAllLands() and struct Land for frontend table rendering. 6. Contract-to-Account (transferring Ether to seller) & Contract-to-Contract (calling IOwnershipHistory). 7. Extensive use of require statements for validations and reversions. 8. view functions (getLand, getAllLands) and pure functions (convertSqFtToAcres, calculateStampDuty).",

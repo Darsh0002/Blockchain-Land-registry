@@ -172,15 +172,16 @@ const App = {
     const roleBadgeEl = document.getElementById("roleBadge");
     if (roleBadgeEl) {
       if (!isConnected) {
-        roleBadgeEl.textContent = "";
+        roleBadgeEl.innerHTML = "";
         roleBadgeEl.className = "";
       } else if (isAdmin) {
-        roleBadgeEl.textContent = "🏛️ Government Authority";
+        roleBadgeEl.innerHTML = `<i data-lucide="landmark" class="w-3.5 h-3.5"></i> Government Authority`;
         roleBadgeEl.className = "badge badge-govt";
       } else {
-        roleBadgeEl.textContent = "👤 Citizen";
+        roleBadgeEl.innerHTML = `<i data-lucide="user-check" class="w-3.5 h-3.5"></i> Citizen`;
         roleBadgeEl.className = "badge badge-citizen";
       }
+      if (window.lucide) window.lucide.createIcons();
     }
 
     // Show register form only to Government Authority
@@ -255,11 +256,12 @@ const App = {
       tbody.innerHTML = `
         <tr>
           <td colspan="8" class="empty-state-box">
-            <div class="empty-icon text-3xl mb-1.5">📂</div>
+            <div class="empty-icon text-3xl mb-1.5"><i data-lucide="inbox" class="w-8 h-8 text-slate-400 mx-auto"></i></div>
             <div class="font-bold text-slate-700 text-sm">No properties found in this category</div>
             <div class="text-xs text-slate-400 mt-1">Try selecting "All Properties" or register a new one below!</div>
           </td>
         </tr>`;
+      if (window.lucide) window.lucide.createIcons();
       return;
     }
 
@@ -272,17 +274,17 @@ const App = {
       // Plain English status badges
       let statusBadge = "";
       if (land.isForSale) {
-        statusBadge = `<span class="status-pill status-for-sale">🟢 Available to Buy</span>`;
+        statusBadge = `<span class="status-pill status-for-sale"><i data-lucide="badge-check" class="w-3.5 h-3.5"></i> Available to Buy</span>`;
       } else if (land.status === 2) {
-        statusBadge = `<span class="status-pill status-sold">🤝 Sold</span>`;
+        statusBadge = `<span class="status-pill status-sold"><i data-lucide="check" class="w-3.5 h-3.5"></i> Sold</span>`;
       } else {
-        statusBadge = `<span class="status-pill status-registered">🔒 Not for Sale</span>`;
+        statusBadge = `<span class="status-pill status-registered"><i data-lucide="lock" class="w-3.5 h-3.5"></i> Not for Sale</span>`;
       }
 
       // Plain English action buttons
       let actionButtons = `
         <button class="btn btn-sm btn-secondary" onclick="App.viewHistory(${land.id}, '${escape(land.location)}')" title="View permanent digital deed history">
-          📜 History
+          <i data-lucide="history" class="w-3.5 h-3.5"></i> History
         </button>
       `;
 
@@ -290,23 +292,23 @@ const App = {
         if (land.isForSale) {
           actionButtons += `
             <button class="btn btn-sm btn-secondary" onclick="App.openPriceModal(${land.id}, 'update', '${land.priceEth}')" title="Change the asking price">
-              ✏️ Price
+              <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i> Price
             </button>
             <button class="btn btn-sm btn-danger" onclick="App.delistLand(${land.id})" title="Remove this property from the marketplace">
-              🚫 Stop Selling
+              <i data-lucide="ban" class="w-3.5 h-3.5"></i> Stop Selling
             </button>
           `;
         } else {
           actionButtons += `
             <button class="btn btn-sm btn-primary" onclick="App.openPriceModal(${land.id}, 'list', '${land.priceEth}')" title="List this property for buyers">
-              🏷️ Put For Sale
+              <i data-lucide="tag" class="w-3.5 h-3.5"></i> Put For Sale
             </button>
           `;
         }
       } else if (land.isForSale) {
         actionButtons += `
           <button class="btn btn-sm btn-success" onclick="App.buyLand(${land.id}, '${land.priceWei}', '${land.priceEth}')" title="Buy directly from the owner with ETH">
-            🛒 Buy (${land.priceEth} ETH)
+            <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i> Buy (${land.priceEth} ETH)
           </button>
         `;
       }
@@ -327,8 +329,8 @@ const App = {
         <td>
           <div class="owner-badge">
             <span>${Wallet.formatAddress(land.currentOwner)}</span>
-            ${isGovtOwner ? '<span class="govt-tag">🏛️ Govt Property</span>' : ''}
-            ${isOwner ? '<span class="you-tag">YOU OWN THIS</span>' : ''}
+            ${isGovtOwner ? '<span class="govt-tag"><i data-lucide="landmark" class="w-2.5 h-2.5 inline mr-0.5"></i> Govt Property</span>' : ''}
+            ${isOwner ? '<span class="you-tag"><i data-lucide="check" class="w-2.5 h-2.5 inline mr-0.5"></i> YOU OWN THIS</span>' : ''}
           </div>
         </td>
         <td>
@@ -343,6 +345,10 @@ const App = {
       `;
       tbody.appendChild(tr);
     });
+
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
   },
 
   /**
@@ -356,7 +362,7 @@ const App = {
     }
 
     if (!this.isGovtAdmin()) {
-      this.showToast("❌ Access Denied: Only the Government Land Authority can register land parcels.", "error");
+      this.showToast("Access Denied: Only the Government Land Authority can register land parcels.", "error");
       return;
     }
 
@@ -374,7 +380,8 @@ const App = {
     const submitBtn = document.getElementById("btnSubmitRegister");
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span>⏳ Confirm in MetaMask...</span>`;
+    submitBtn.innerHTML = `<span><i data-lucide="loader-2" class="w-4 h-4 animate-spin inline mr-1.5"></i> Confirm in MetaMask...</span>`;
+    if (window.lucide) window.lucide.createIcons();
 
     try {
       this.showToast("Please approve the registration transaction in your MetaMask wallet...", "info");
@@ -387,7 +394,7 @@ const App = {
       );
 
       console.log("Registered:", receipt);
-      this.showToast(`🎉 Property successfully registered on blockchain!`, "success");
+      this.showToast("Property successfully registered on blockchain!", "success");
 
       // Reset form & reload
       document.getElementById("registerLandForm").reset();
@@ -417,8 +424,8 @@ const App = {
 
     const confirmed = confirm(
       `Buy Property #${landId} for ${priceEth} ETH?\n\n` +
-      `💰 Direct Payment: Your ${priceEth} ETH will be transferred directly to the seller with zero middleman commissions.\n` +
-      `📜 Deed Transfer: Ownership deed will be transferred to your wallet address immediately.`
+      `Direct Payment: Your ${priceEth} ETH will be transferred directly to the seller with zero middleman commissions.\n` +
+      `Deed Transfer: Ownership deed will be transferred to your wallet address immediately.`
     );
     if (!confirmed) return;
 
@@ -426,7 +433,7 @@ const App = {
       this.showToast("Please approve the purchase transaction in MetaMask...", "info");
       const receipt = await ContractService.buyLand(landId, priceWei);
 
-      this.showToast(`🎉 Congratulations! You are now the official owner of Property #${landId}!`, "success");
+      this.showToast(`Congratulations! You are now the official owner of Property #${landId}!`, "success");
 
       await Wallet.updateState();
       await this.loadAndRenderLands();
@@ -460,13 +467,16 @@ const App = {
     document.getElementById("modalActionType").value = action;
     document.getElementById("modalPriceInput").value = currentPriceEth || "1.0";
 
-    const title = action === "list" ? `🏷️ Put Property #${landId} For Sale` : `✏️ Change Price for Property #${landId}`;
+    const title = action === "list" 
+      ? `<i data-lucide="tag" class="w-4 h-4 text-blue-600 inline mr-1.5"></i> Put Property #${landId} For Sale`
+      : `<i data-lucide="dollar-sign" class="w-4 h-4 text-blue-600 inline mr-1.5"></i> Change Price for Property #${landId}`;
     const hint = action === "list" ? "Enter the selling price in ETH for buyers" : "Enter the new asking price in ETH";
 
-    document.getElementById("priceModalTitle").textContent = title;
+    document.getElementById("priceModalTitle").innerHTML = title;
     document.getElementById("modalPriceHint").textContent = hint;
 
     document.getElementById("updatePriceModal").classList.add("active");
+    if (window.lucide) window.lucide.createIcons();
   },
 
   async handlePriceModalSubmit() {
@@ -512,19 +522,20 @@ const App = {
       const records = await ContractService.getLandHistory(landId);
 
       if (!records || records.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="empty-state-box"><div>No past transfers found.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-state-box"><i data-lucide="inbox" class="w-6 h-6 text-slate-400 mx-auto mb-1"></i><div>No past transfers found.</div></td></tr>`;
+        if (window.lucide) window.lucide.createIcons();
         return;
       }
 
       tbody.innerHTML = "";
       records.forEach((rec, index) => {
         const fromAddr = rec.from === "0x0000000000000000000000000000000000000000"
-          ? `<span class="text-blue-600 font-semibold text-xs flex items-center gap-1">🏛️ Initial Government Deed Mint</span>`
+          ? `<span class="text-blue-600 font-semibold text-xs flex items-center gap-1.5"><i data-lucide="landmark" class="w-3.5 h-3.5"></i> Initial Government Deed Mint</span>`
           : `<span class="owner-badge">${Wallet.formatAddress(rec.from)}</span>`;
 
         const isGovtTo = (this.govtAuthority && rec.to.toLowerCase() === this.govtAuthority.toLowerCase()) ||
                          rec.to.toLowerCase() === "0xfc8d23d9d365f6879bef73a89d2c243c8d707569".toLowerCase();
-        const toAddr = `<span class="owner-badge">${Wallet.formatAddress(rec.to)}${isGovtTo ? ' <span class="govt-tag">🏛️ Govt Property</span>' : ''}</span>`;
+        const toAddr = `<span class="owner-badge">${Wallet.formatAddress(rec.to)}${isGovtTo ? ' <span class="govt-tag"><i data-lucide="landmark" class="w-2.5 h-2.5 inline mr-0.5"></i> Govt Property</span>' : ''}</span>`;
         const price = ethers.utils.formatEther(rec.price);
         const date = new Date(rec.timestamp.toNumber ? rec.timestamp.toNumber() * 1000 : parseInt(rec.timestamp.toString()) * 1000).toLocaleString();
 
@@ -538,6 +549,7 @@ const App = {
         `;
         tbody.appendChild(tr);
       });
+      if (window.lucide) window.lucide.createIcons();
     } catch (err) {
       console.error(err);
       tbody.innerHTML = `<tr><td colspan="5" class="empty-state-box"><div>Could not load deed history: ${err.message}</div></td></tr>`;
@@ -553,16 +565,17 @@ const App = {
     const toast = document.createElement("div");
     toast.className = `toast ${type}`;
 
-    let icon = "ℹ️";
-    if (type === "success") icon = "✅";
-    if (type === "error") icon = "❌";
+    let icon = `<i data-lucide="info" class="w-5 h-5 text-blue-600 shrink-0"></i>`;
+    if (type === "success") icon = `<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 shrink-0"></i>`;
+    if (type === "error") icon = `<i data-lucide="alert-circle" class="w-5 h-5 text-rose-600 shrink-0"></i>`;
 
     toast.innerHTML = `
-      <div style="font-size: 1.2rem;">${icon}</div>
+      <div class="flex items-center">${icon}</div>
       <div style="flex: 1; font-weight: 500;">${message}</div>
     `;
 
     container.appendChild(toast);
+    if (window.lucide) window.lucide.createIcons();
 
     setTimeout(() => {
       toast.style.opacity = "0";

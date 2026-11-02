@@ -200,7 +200,7 @@ const Wallet = {
       // Show Switch Account button once connected
       if (btnSwitch) btnSwitch.style.display = "inline-flex";
 
-      badge.textContent = "🟢 Connected";
+      badge.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> Connected`;
       badge.className = "badge badge-success";
 
       displayAccount.textContent = shortAddr;
@@ -216,19 +216,23 @@ const Wallet = {
           : "-";
       displayNetwork.textContent = netName;
     } else {
-      btnText.textContent = "Connect MetaMask";
+      btnText.textContent = "Connect MetaMask Wallet";
       btnConnect.classList.add("btn-primary");
       btnConnect.classList.remove("btn-outline");
 
       // Hide Switch Account button when disconnected
       if (btnSwitch) btnSwitch.style.display = "none";
 
-      badge.textContent = "⚪ Disconnected";
+      badge.innerHTML = `<i data-lucide="circle-slash" class="w-3.5 h-3.5 text-slate-400"></i> Disconnected`;
       badge.className = "badge badge-neutral";
 
       displayAccount.textContent = "Not Connected";
       displayBalance.textContent = "0.0000 ETH";
       displayNetwork.textContent = "-";
+    }
+
+    if (window.lucide) {
+      window.lucide.createIcons();
     }
   },
 
